@@ -4,7 +4,7 @@ import HomePage from '../views/HomeView.vue';
 import DictionaryPage from '../views/DictionaryView.vue';
 import Calculator from '@/views/CalculatorView.vue';
 import EmployeesView from '@/views/EmployeesView.vue';
-
+import GreetingView from '@/views/GreetingView.vue';
 const routes = [
   {
     path: '/',
@@ -25,6 +25,11 @@ const routes = [
     path: '/employees',
     name: 'EmployeesView',
     component: EmployeesView,
+  },
+  {
+    path: '/greeting',
+    name: 'GreetingView',
+    component: GreetingView,
   },
 
 ];
