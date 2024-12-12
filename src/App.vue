@@ -6,11 +6,13 @@ export default {
 <template>
   <nav class="navbar">
     <div class="navbar-container">
-      <div class="logo">imgur</div>
+      <div class="logo">
+        <img src="https://static.vecteezy.com/system/resources/previews/000/601/639/original/vector-digital-print-logo-design.jpg" alt="logo">
+      </div>
       <router-link to="/" class="nav-link">Home</router-link>
       <router-link to="/dictionary" class="nav-link">Dictionary</router-link>
-      <router-link to="/calculator" class="nav-link">Calculator</router-link>
-      <router-link to="/employees" class="nav-link">Employees</router-link>
+      <router-link to="/about" class="nav-link">About</router-link>
+      <router-link to="/contact-us" class="nav-link">Contact Us</router-link>
 
       <div>
         <input type="text" class="search-input" placeholder="Images, #tags, @users oh my!" />
@@ -28,7 +30,7 @@ export default {
 
 <style scoped>
 .navbar {
-  background-color: #3b9dff; /* Dark background */
+  background-color: #1F509A; /* Dark background */
   padding: 10px 20px; /* Padding for the navbar */
 }
 .navbar .nav-link {
@@ -44,12 +46,17 @@ export default {
   width: 100%; /* Full width */
 }
 
-.logo {
-  font-size: 24px; /* Logo font size */
-  font-weight: bold; /* Logo font weight */
-  color: white; /* Logo color */
+.navbar-container .logo {
+  width: 50px;
+  height: 50px;/* Logo color */
+
 }
 
+.logo img{
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+}
 .search-input {
   flex: 1; /* Make input take available space */
   margin: 0 20px; /* Margin on sides */
@@ -69,8 +76,8 @@ export default {
 }
 
 .new-post-button {
-  background-color: #1abc9c; /* New post button color */
-  color: white; /* Text color */
+  background-color: #D4EBF8; /* New post button color */
+  color: #0A3981; /* Text color */
   padding: 8px 16px; /* Padding inside button */
   border: none; /* Remove border */
   border-radius: 4px; /* Rounded corners */
@@ -80,7 +87,7 @@ export default {
 
 .auth-button {
   background-color: transparent; /* No background */
-  color: white; /* Text color */
+  color: White; /* Text color */
   padding: 8px 16px; /* Padding inside button */
   border: 2px solid transparent; /* Transparent border */
   border-radius: 4px; /* Rounded corners */
@@ -91,7 +98,7 @@ export default {
 }
 
 .auth-button:hover {
-  border-color: #1abc9c; /* Border color on hover */
+  border-color: #0A3981; /* Border color on hover */
 }
 
 .sign-in:hover {
@@ -99,7 +106,7 @@ export default {
 }
 
 .sign-up {
-  background-color: #1abc9c; /* Sign up button color */
-  color: white; /* Text color */
+  background-color: #D4EBF8; /* Sign up button color */
+  color: #0A3981; /* Text color */
 }
 </style>
