@@ -11,8 +11,8 @@ export default {
       </div>
       <router-link to="/" class="nav-link">Home</router-link>
       <router-link to="/dictionary" class="nav-link">Dictionary</router-link>
-      <router-link to="/about" class="nav-link">About</router-link>
-      <router-link to="/contact-us" class="nav-link">Contact Us</router-link>
+      <router-link to="/calculator" class="nav-link">Calculator</router-link>
+      <router-link to="/employees" class="nav-link">Employee</router-link>
 
       <div>
         <input type="text" class="search-input" placeholder="Images, #tags, @users oh my!" />

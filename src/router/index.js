@@ -2,8 +2,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../views/HomeView.vue';
 import DictionaryPage from '../views/DictionaryView.vue';
-import AboutView from '@/views/AboutView.vue';
-import ContactUsView from '@/views/ContactUsView.vue';
+import Calculator from '@/views/CalculatorView.vue';
+import EmployeesView from '@/views/EmployeesView.vue';
 
 const routes = [
   {
@@ -17,14 +17,14 @@ const routes = [
     component: DictionaryPage,
   },
   {
-    path: '/about',
-    name: 'AboutView',
-    component: AboutView,
+    path: '/calculator',
+    name: 'Calculator',
+    component: Calculator,
   },
   {
-    path: '/contact-us',
-    name: 'ContactUsView',
-    component: ContactUsView,
+    path: '/employees',
+    name: 'EmployeesView',
+    component: EmployeesView,
   },
 
 ];

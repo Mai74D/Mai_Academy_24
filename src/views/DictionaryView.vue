@@ -1,6 +1,6 @@
 <template>
   <div class="dictionary-container">
-    <h1 class="title">Tử Điển</h1>
+    <h1 class="title">Từ Điển</h1>
     <div class="search-container">
       <input type="text" v-model="searchTerm" placeholder="hello" class="search-input">
       <button @click="search" class="search-button">Tìm kiếm</button>
@@ -63,27 +63,29 @@ export default {
 
 .search-input {
   width: 70%;
-  height: 40px;
+  height: 20px;
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
 }
 
 .search-button {
   width: 30%;
-  height: 40px;
+  height: 42px;
   padding: 10px;
   font-size: 16px;
-  background-color: #4CAF50;
+  background-color: #1b7ff1;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
   cursor: pointer;
 }
 
 .search-button:hover {
-  background-color: #3e8e41;
+  background-color: #1b7ff1;
 }
 
 .translation {
