@@ -6,7 +6,7 @@
         type="text"
         v-model="searchTerm"
         placeholder="Enter the word you are looking for..."
-        class="search-input"
+        class="search-input" 
       />
       <button @click="search" class="search-button">Search</button>
     </div>
