@@ -27,7 +27,7 @@
             <button class="btn btn-danger" @click="deleteEmployee(employee.id)">
               <i class="fas fa-trash-alt"></i> Delete
             </button>
-            <button class="btn btn-info" @click="viewDetails(index)">
+            <button class="btn btn-info" @click="viewDetails(employee.id)">
               <i class="fas fa-info-circle"></i> Detail
             </button>
           </td>
@@ -86,7 +86,21 @@
         </form>
       </div>
     </div>
+
+    <!-- View Employee Details Modal -->
+    <div v-if="showDetailsModal" class="modal">
+      <div class="modal-content">
+        <h2>Employee Details</h2>
+        <p><strong>Name:</strong> {{ selectedEmployee.name }}</p>
+        <p><strong>Date of Birth:</strong> {{ selectedEmployee.dob }}</p>
+        <p><strong>Gender:</strong> {{ selectedEmployee.gender }}</p>
+        <p><strong>Salary:</strong> {{ formatCurrency(selectedEmployee.salary) }}</p>
+        <p><strong>Phone Number:</strong> {{ selectedEmployee.phone }}</p>
+        <button class="btn btn-secondary" @click="closeDetailsModal">Close</button>
+      </div>
+    </div>
   </div>
+
 </template>
 <script>
 import axios from 'axios';
@@ -97,6 +111,7 @@ export default {
       employees: [], // List of employees
       showAddModal: false, // Controls visibility of the Add modal
       showUpdateModal: false, // Controls visibility of the Update modal
+      showDetailsModal: false,
       newEmployee: {
         name: '',
         dob: '',
@@ -111,6 +126,7 @@ export default {
         salary: 0,
       }, // Data of the employee being updated
       currentEmployeeIndex: null, // Index of the employee being updated
+      selectedEmployee: {},
     };
   },
   mounted() {
@@ -166,6 +182,7 @@ export default {
       this.currentEmployeeIndex = null;
     },
     async updateEmployee() {
+      // Update the employee data in the list
       try {
         const employee = await axios.put(`http://localhost:8080/employees/${this.currentEmployee.id}`, this.currentEmployee)
         this.employees[this.currentEmployeeIndex] = employee.data; // Update the employee data in the list
@@ -189,8 +206,19 @@ export default {
         }
       }
     },
-    viewDetails(index) {
-      alert(`Employee details: ${this.employees[index].name}`);
+    async viewDetails(id) {
+      try {
+        const response = await axios.get(`http://localhost:8080/employees/${id}`);
+        this.selectedEmployee = response.data; // Assign response data to selectedEmployee
+        this.showDetailsModal = true; // Open modal
+      } catch (error) {
+        console.error("Error fetching employee details:", error);
+        alert("Unable to fetch employee details. Please try again.");
+      }
+    },
+    closeDetailsModal() {
+      this.showDetailsModal = false;
+      this.selectedEmployee = {}; // Reset selectedEmployee
     },
     formatCurrency(value) {
       return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
