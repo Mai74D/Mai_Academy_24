@@ -43,10 +43,8 @@ export default {
                       address: this.address,
                   },
               });
-              // Cập nhật greetingMessage với phản hồi từ API
               this.greetingMessage = response.data;
           } catch (error) {
-              // Hiển thị thông báo lỗi nếu có
               this.greetingMessage = 'Có lỗi xảy ra. Vui lòng thử lại.';
               console.error(error);
           }
@@ -61,42 +59,42 @@ Copier
 <style scoped>
 form {
     display: flex;
-    flex-direction: column; /* Sắp xếp theo chiều dọc */
-    gap: 15px; /* Khoảng cách giữa các phần tử */
+    flex-direction: column;
+    gap: 15px;
     margin: 20px 0;
 }
 
 div .input {
     display: flex;
-    flex-direction: row; /* Sắp xếp theo chiều ngang */
+    flex-direction: row;
     align-items: center;
 }
 
 label {
-    margin-right: 10px; /* Khoảng cách giữa label và input */
+    margin-right: 10px;
     font-weight: bold;
 }
 
 input[type="text"] {
-    border: 1px solid #ccc; /* Đường viền */
-    border-radius: 5px; /* Bo tròn góc */
-    padding: 10px; /* Khoảng cách bên trong */
-    flex: 1; /* Chiếm không gian còn lại */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    flex: 1;
 }
 
 input[type="submit"] {
-    background-color: #4CAF50; /* Màu nền */
-    color: white; /* Màu chữ */
-    border: none; /* Không có đường viền */
-    border-radius: 5px; /* Bo tròn góc */
-    padding: 10px 20px; /* Khoảng cách bên trong */
-    cursor: pointer; /* Con trỏ khi hover */
-    font-size: 16px; /* Kích thước chữ */
-    transition: background-color 0.3s; /* Hiệu ứng chuyển màu */
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
 }
 
 input[type="submit"]:hover {
-    background-color: #45a049; /* Màu nền khi hover */
+    background-color: #45a049; 
 }
 h2{
   text-align: center;

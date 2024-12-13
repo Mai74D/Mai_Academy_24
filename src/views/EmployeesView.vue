@@ -166,7 +166,6 @@ export default {
       this.currentEmployeeIndex = null;
     },
     async updateEmployee() {
-      // Update the employee data in the list
       try {
         const employee = await axios.put(`http://localhost:8080/employees/${this.currentEmployee.id}`, this.currentEmployee)
         this.employees[this.currentEmployeeIndex] = employee.data; // Update the employee data in the list
@@ -177,15 +176,11 @@ export default {
 
     },
     async deleteEmployee(id) {
-      // Hiển thị thông báo xác nhận
       const isConfirmed = confirm(`Do you want to delete this employee?`);
 
       if (isConfirmed) {
         try {
-          // Gửi yêu cầu DELETE đến API
           await axios.delete(`http://localhost:8080/employees/${id}`);
-
-          // Cập nhật danh sách nhân viên sau khi xóa thành công
           this.employees = this.employees.filter(employee => employee.id !== id);
 
         } catch (error) {
