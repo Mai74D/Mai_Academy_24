@@ -1,270 +1,316 @@
 <template>
-  <div>
-    <h1>List of Employees</h1>
-    <button class="btn btn-success" @click="openAddModal">+ Add new</button>
-    <table class="employee-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Name</th>
-          <th>Date of birth</th>
-          <th>Gender</th>
-          <th>Salary</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(employee, index) in employees" :key="index">
-          <td>{{ index + 1 }}</td>
-          <td>{{ employee.name }}</td>
-          <td>{{ employee.dob }}</td>
-          <td>{{ employee.gender }}</td>
-          <td>{{ formatCurrency(employee.salary) }}</td>
-          <td>
-            <button class="btn btn-primary" @click="openUpdateModal(employee, index)">
-              <i class="fas fa-edit"></i> Update
-            </button>
-            <button class="btn btn-danger" @click="deleteEmployee(employee.id)">
-              <i class="fas fa-trash-alt"></i> Delete
-            </button>
-            <button class="btn btn-info" @click="viewDetails(employee.id)">
-              <i class="fas fa-info-circle"></i> Detail
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="container">
+    <!-- Form tìm kiếm -->
+    <div class="search-form">
+      <input type="text" v-model="searchParams.name" placeholder="Employee name" />
+      <input type="date" v-model="searchParams.dobFrom" />
+      <input type="date" v-model="searchParams.dobTo" />
+      <select v-model="searchParams.gender">
+          <option value="">All</option>
+          <option value="MALE">Male</option>
+          <option value="FEMALE">Female</option>
+      </select>
+      <div>
+        <input type="number" v-model="searchParams.salaryFrom" placeholder="Min Salary" />
+        <input type="number" v-model="searchParams.salaryTo" placeholder="Max Salary" />
+      </div>
+      <button class="btn btn-search" @click="fetchEmployees(1)">Search</button>
+    </div>
+    <div class="header">
+      <h1 class="title">Employee Management</h1>
+      <button class="btn btn-add" @click="showAddForm">+ Add New</button>
+    </div>
+    <div class="table-container">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Name</th>
+            <th>DOB</th>
+            <th>Gender</th>
+            <th>Salary</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template v-if="employees.length > 0">
+            <tr v-for="(employee, index) in employees" :key="employee.id">
+              <td>{{ index + 1 }}</td>
+              <td>{{ employee.name }}</td>
+              <td>{{ formatDate(employee.dob) }}</td>
+              <td>{{ employee.gender === 'MALE' ? 'Male' : 'Female' }}</td>
+              <td>{{ formatCurrency(employee.salary) }}</td>
+              <td>
+                <button class="btn btn-primary" @click="showUpdateForm(employee)">Update</button>
+                <button class="btn btn-danger" @click="deleteEmployee(employee.id)">Delete</button>
+                <button class="btn btn-info" @click="showDetails(employee)">Detail</button>
+              </td>
+            </tr>
+          </template>
+          <tr v-else>
+            <td colspan="6" class="no-data">No employees found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button
+        :disabled="currentPage === 1"
+        @click="fetchEmployees(currentPage - 1)"
+      >
+        Previous
+      </button>
 
-    <!-- Add New Employee Modal -->
-    <div v-if="showAddModal" class="modal">
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+
+      <button
+        :disabled="currentPage === totalPages"
+        @click="fetchEmployees(currentPage + 1)"
+      >
+        Next
+      </button>
+    </div>
+
+    <!-- Form thêm/sửa -->
+    <div v-if="showForm" class="modal">
       <div class="modal-content">
-        <h2>Add New Employee</h2>
-        <form @submit.prevent="addNewEmployee">
-          <label>Name:</label>
-          <input v-model="newEmployee.name" type="text" required />
-
-          <label>Date of Birth:</label>
-          <input v-model="newEmployee.dob" type="date" required />
-
-          <label>Gender:</label>
-          <select v-model="newEmployee.gender" required>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-
-          <label>Salary:</label>
-          <input v-model="newEmployee.salary" type="number" step="1000" required />
-
-          <button type="submit" class="btn btn-primary">Save</button>
-          <button type="button" class="btn btn-secondary" @click="closeAddModal">Cancel</button>
+        <h3>{{ formMode === 'add' ? 'Add new employee' : 'Update employee information' }}</h3>
+        <form @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <label>Name:</label>
+            <input type="text" v-model="formData.name" required />
+          </div>
+          <div class="form-group">
+            <label>Date of birth:</label>
+            <input type="date" v-model="formData.dob" required />
+          </div>
+          <div class="form-group">
+            <label>Gender:</label>
+            <select v-model="formData.gender" required>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Salary:</label>
+            <input type="number" v-model="formData.salary" required />
+          </div>
+          <div class="form-group">
+            <label>Phone Number:</label>
+            <input type="number" v-model="formData.phone" required />
+          </div>
+          <div class="form-buttons">
+            <button class="btn btn-primary" type="submit">
+              {{ formMode === 'add' ? 'Add New' : 'Update' }}
+            </button>
+            <button class="btn btn-secondary" @click="closeForm">Cancel</button>
+          </div>
         </form>
       </div>
     </div>
-
-    <!-- Update Employee Modal -->
-    <div v-if="showUpdateModal" class="modal">
+    <!-- Modal chi tiết -->
+    <div v-if="showDetailModal" class="modal">
       <div class="modal-content">
-        <h2>Update Employee</h2>
-        <form @submit.prevent="updateEmployee">
-          <label>Name:</label>
-          <input v-model="currentEmployee.name" type="text" required />
-
-          <label>Date of Birth:</label>
-          <input v-model="currentEmployee.dob" type="date" required />
-
-          <label>Gender:</label>
-          <select v-model="currentEmployee.gender" required>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-
-          <label>Salary:</label>
-          <input v-model="currentEmployee.salary" type="number" step="1000" required />
-
-          <button type="submit" class="btn btn-primary">Update</button>
-          <button type="button" class="btn btn-secondary" @click="closeUpdateModal">Cancel</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- View Employee Details Modal -->
-    <div v-if="showDetailsModal" class="modal">
-      <div class="modal-content">
-        <h2>Employee Details</h2>
+        <h3>Details</h3>
         <p><strong>Name:</strong> {{ selectedEmployee.name }}</p>
-        <p><strong>Date of Birth:</strong> {{ selectedEmployee.dob }}</p>
-        <p><strong>Gender:</strong> {{ selectedEmployee.gender }}</p>
+        <p><strong>Date of birth:</strong> {{ formatDate(selectedEmployee.dob) }}</p>
+        <p><strong>Gender:</strong> {{ selectedEmployee.gender === 'MALE' ? 'Male' : 'Female' }}</p>
         <p><strong>Salary:</strong> {{ formatCurrency(selectedEmployee.salary) }}</p>
         <p><strong>Phone Number:</strong> {{ selectedEmployee.phone }}</p>
-        <button class="btn btn-secondary" @click="closeDetailsModal">Close</button>
+        <button class="btn btn-secondary" @click="closeDetailModal">Cancel</button>
       </div>
     </div>
   </div>
-
 </template>
+
 <script>
 import axios from 'axios';
 
 export default {
   data() {
     return {
-      employees: [], // List of employees
-      showAddModal: false, // Controls visibility of the Add modal
-      showUpdateModal: false, // Controls visibility of the Update modal
-      showDetailsModal: false,
-      newEmployee: {
+      employees: [],
+      currentPage: 1,
+      totalPages: 0,
+      pageSize: 10,
+      showForm: false,
+      formMode: 'add',
+      formData: {
+        id: '',
         name: '',
         dob: '',
-        gender: 'Male',
+        gender: 'MALE',
         salary: 0,
-      }, // New employee data
-      currentEmployee: {
-        id: null,
+        phone: '',
+      },
+      searchParams: {
         name: '',
-        dob: '',
-        gender: 'Female',
-        salary: 0,
-      }, // Data of the employee being updated
-      currentEmployeeIndex: null, // Index of the employee being updated
+        dobFrom: '',
+        dobTo: '',
+        gender: '',
+        salaryFrom: '',
+        salaryTo: '',
+      },
+      showDetailModal: false,
       selectedEmployee: {},
     };
   },
-  mounted() {
-    this.fetchEmployees(); // Fetch employee data from server when the component is mounted
-  },
   methods: {
-    async fetchEmployees() {
-      try {
-        const response = await axios.get('http://localhost:8080/employees');
-        this.employees = response.data;
-      } catch (error) {
-        console.error("Error fetching employee data:", error);
-      }
-    },
-    openAddModal() {
-      this.showAddModal = true;
-    },
-    closeAddModal() {
-      this.showAddModal = false;
-      this.resetNewEmployee();
-    },
-    resetNewEmployee() {
-      this.newEmployee = {
-        name: '',
-        dob: '',
-        gender: 'Nam',
-        salary: 0,
-      };
-    },
-    addNewEmployee() {
-      // Add a new employee to the list
-      this.employees.push({ ...this.newEmployee });
-      this.closeAddModal();
-    },
-    openUpdateModal(employee, index) {
-      // Open the update modal and populate it with the selected employee data
-      this.showUpdateModal = true;
-      this.currentEmployee = { ...employee }; // Set the data of the employee being updated
-      this.currentEmployeeIndex = index; // Store the index of the employee being updated
-    },
-    closeUpdateModal() {
-      this.showUpdateModal = false;
-      this.resetCurrentEmployee();
-    },
-    resetCurrentEmployee() {
-      this.currentEmployee = {
-        id: null,
-        name: '',
-        dob: '',
-        gender: 'Nam',
-        salary: 0,
-      };
-      this.currentEmployeeIndex = null;
-    },
-    async updateEmployee() {
-      // Update the employee data in the list
-      try {
-        const employee = await axios.put(`http://localhost:8080/employees/${this.currentEmployee.id}`, this.currentEmployee)
-        this.employees[this.currentEmployeeIndex] = employee.data; // Update the employee data in the list
-      } catch (error) {
-        error.message = "Error while updating";
-      }
-      this.closeUpdateModal();
-
-    },
-    async deleteEmployee(id) {
-      const isConfirmed = confirm(`Do you want to delete this employee?`);
-
-      if (isConfirmed) {
+    async fetchEmployees(page = 1) {
         try {
-          await axios.delete(`http://localhost:8080/employees/${id}`);
-          this.employees = this.employees.filter(employee => employee.id !== id);
-
+            this.currentPage = page;
+            const { name, dobFrom, dobTo, gender, salaryFrom, salaryTo } = this.searchParams;
+            const response = await axios.get('http://localhost:8080/employees', {
+                params: {
+                    name,
+                    dobFrom,
+                    dobTo,
+                    gender,
+                    salaryFrom,
+                    salaryTo,
+                    page: this.currentPage - 1,
+                    size: this.pageSize,
+                },
+            });
+            this.employees = response.data.data.content;
+            this.totalPages = response.data.totalPages;
+            console.log(this.employees);
         } catch (error) {
-          console.error("Error while deleting employee:", error);
-          alert("Error while deleting employee. Please try again.");
+            console.error(error);
         }
-      }
     },
-    async viewDetails(id) {
-      try {
-        const response = await axios.get(`http://localhost:8080/employees/${id}`);
-        this.selectedEmployee = response.data; // Assign response data to selectedEmployee
-        this.showDetailsModal = true; // Open modal
-      } catch (error) {
-        console.error("Error fetching employee details:", error);
-        alert("Unable to fetch employee details. Please try again.");
-      }
-    },
-    closeDetailsModal() {
-      this.showDetailsModal = false;
-      this.selectedEmployee = {}; // Reset selectedEmployee
+
+    formatDate(date) {
+      return new Date(date).toLocaleDateString('vi-VN');
     },
     formatCurrency(value) {
-      return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     },
+    showAddForm() {
+      this.formMode = 'add';
+      this.formData = { id: '', name: '', dob: '', gender: 'MALE', salary: 0, phone: '' };
+      this.showForm = true;
+    },
+    showUpdateForm(employee) {
+      this.formMode = 'update';
+      this.formData = { ...employee };
+      this.showForm = true;
+    },
+    async handleSubmit() {
+        try {
+            if (this.formMode === 'add') {
+                await axios.post('http://localhost:8080/employees', this.formData);
+            } else if (this.formMode === 'update') {
+                await axios.put(`http://localhost:8080/employees/${this.formData.id}`, this.formData);
+            }
+            this.closeForm();
+            this.fetchEmployees();
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    async deleteEmployee(id) {
+        try {
+            if (confirm('Are you sure you want to delete this employee?')) {
+                await axios.delete(`http://localhost:8080/employees/${id}`);
+                this.fetchEmployees();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    showDetails(employee) {
+      this.selectedEmployee = employee;
+      this.showDetailModal = true;
+    },
+    closeDetailModal() {
+      this.showDetailModal = false;
+    },
+    closeForm() {
+      this.showForm = false;
+    },
+  },
+  mounted() {
+    this.fetchEmployees();
   },
 };
 </script>
 
 <style scoped>
-h1 {
+.container {
+  max-width: 95%;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
 }
-.employee-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
+.title {
+  font-size: 2rem;
+  color: #333;
 }
-.employee-table th, .employee-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-.employee-table th {
-  background-color: #f2f2f2;
-}
-button {
-  margin: 0 5px;
-  padding: 5px 10px;
+.btn-add {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
 }
-.btn-success {
-  margin-bottom: 20px;
-  color: white;
-  background-color: green;
+.btn-add:hover {
+  background-color: #218838;
+}
+.table-container {
+  overflow-x: auto;
+}
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.styled-table thead {
+  background-color: #007bff;
+  color: #fff;
+}
+.styled-table th,
+.styled-table td {
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+.styled-table tbody tr:nth-child(even) {
+  background-color: #f3f3f3;
+}
+.styled-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+.btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 .btn-primary {
-  color: white;
-  background-color: blue;
+  background-color: #007bff;
+  color: #fff;
 }
 .btn-danger {
-  color: white;
-  background-color: red;
+  background-color: #dc3545;
+  color: #fff;
+}
+.btn-secondary {
+  background-color: #6c757d;
+  color: #fff;
 }
 .btn-info {
-  color: white;
   background-color: #17a2b8;
+  color: #fff;
+}
+.btn-info:hover {
+  background-color: #138496;
 }
 .modal {
   position: fixed;
@@ -276,35 +322,115 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 .modal-content {
-  background: white;
+  background-color: #fff;
   padding: 20px;
-  border-radius: 5px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 400px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-.modal-content h2 {
-  margin-top: 0;
+.form-group {
+  margin-bottom: 15px;
 }
-.modal-content form {
-  display: flex;
-  flex-direction: column;
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
-.modal-content label {
-  margin: 10px 0 5px;
-}
-.modal-content input, .modal-content select {
+.form-group input,
+.form-group select {
+  width: 100%;
   padding: 8px;
-  margin-bottom: 10px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 5px;
 }
-.modal-content button {
-  margin-top: 10px;
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
-.btn-secondary {
-  background-color: gray;
+/* Container form tìm kiếm */
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+}
+/* Input chung và select */
+.search-form input,
+.search-form select {
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+border-radius: 5px;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+}
+.search-form input:focus,
+.search-form select:focus {
+  border-color: #409eff;
+  box-shadow: 0 0 5px rgba(64, 158, 255, 0.6);
+}
+/* Nút tìm kiếm */
+.btn-search {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #409eff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease-in-out,
+    transform 0.2s ease-in-out;
+}
+.btn-search:hover {
+  background-color: #337ecc;
+  transform: scale(1.05);
+}
+.btn-search:active {
+  background-color: #295bb3;
+  transform: scale(0.95);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  background-color: #007bff;
   color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-form {
+    flex-direction: column;
+  }
+  .search-form input,
+  .search-form select,
+  .btn-search {
+    width: 100%;
+  }
 }
 </style>
